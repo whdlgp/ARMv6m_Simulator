@@ -14,7 +14,7 @@ Instruction Instruction::instInst;
 static Memory* mem = Memory::getInstance();
 static Register* reg = Register::getInstance();
 
-void Instruction::instName(char* name)
+void Instruction::instName(const char* name)
 {
     strncpy(currentInst, name, 20);
 }
