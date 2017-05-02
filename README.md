@@ -67,6 +67,7 @@ Only support Thread mode
 * Set break point        : type 'b' and hex address, like "b 4A"
 * Step by step debug     : just type 's' and enter.
 * Run(stop at breakpoint): just type 'r' and enter.
+* Verbose                : toogle Run verbosity with 'v'
 * Finally, it will store the memory in dumpfile!
 
 ![example image1](http://i.imgur.com/4O15uYH.png)
