@@ -41,8 +41,8 @@ private :
     static Memory memInst;
 
     uint8_t mem[MEM_MAXSIZE];
-    char* dumpFileName;
-    char* instFileName;
+    const char* dumpFileName;
+    const char* instFileName;
 };
 
 #endif /* INC_MEMORY_H_ */

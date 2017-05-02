@@ -29,7 +29,7 @@ public :
 
     void decode();
 
-    void instName(char* name);
+    void instName(const char* name);
     char* getInstName();
 private :
     static Instruction instInst;
