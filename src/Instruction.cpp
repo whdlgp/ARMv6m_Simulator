@@ -1442,7 +1442,7 @@ void Instruction::push_mult(uint16_t inst)
     uint16_t m = (inst >> 8) & 0x01;
 
     uint16_t stack_data_list = (m << 14) | register_list;
-    uint8_t addr = reg->R[SP] - 4*bitCount(stack_data_list);
+    uint32_t addr = reg->R[SP] - 4*bitCount(stack_data_list);
 
     uint8_t i;
     for(i = 0; i < 15; i++)
