@@ -32,6 +32,7 @@ public :
     {
         breakpointCount = 0;
         memset(breakpointList, 0x0, MEM_MAXSIZE);
+        verbose = false;
     }
     static UserInterface* getInstance() { return &interfaceInst; }
 
@@ -62,6 +63,7 @@ public :
 private :
     static UserInterface interfaceInst;
 
+    bool verbose;
     uint32_t breakpointCount;
     uint32_t breakpointList[MEM_MAXSIZE];
 };
