@@ -27,6 +27,7 @@ void UserInterface::printPreface()
     printf("   Set break point        : type 'b' and hex address, like \"b 4A\"-\n");
     printf("   Step by step debug     : just type 's' and enter. Boom!--------\n");
     printf("   Run(stop at breakpoint): just type 'r' and enter. Bang!--------\n");
+    printf("   Verbose                : toogle Run verbosity with 'v'---------\n");
     printf("   Finally, it will store the memory in dumpfile!----------------\n");
 }
 
@@ -109,6 +110,11 @@ int8_t UserInterface::receiveInput(uint8_t* state, uint8_t* showList, uint32_t* 
                 *showList = 1;
                 *hex = 0;
             }
+        }
+        else if(!strcmp(inputStr[0], "v"))
+        {
+            verbose ^= true;
+            printf("verbose Run output %s\n", verbose ? "on" : "off");
         }
         else if(!strcmp(inputStr[0], "q"))
         {
@@ -331,6 +337,8 @@ void UserInterface::excuteAll()
         if(breakpointSearch(reg->R[PC]) < 0)
         {
             ist->decode();
+            if (verbose)
+                memPrint();
         }
         else
         {
