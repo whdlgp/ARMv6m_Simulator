@@ -93,7 +93,7 @@ uint8_t Register::checkCond(uint8_t cond)
                 ret = 0;
             break;
         case 9 :
-            if((PSR[psrC] == 0) && (PSR[psrZ] == 1))
+            if((PSR[psrC] == 0) || (PSR[psrZ] == 1))
                 ret = 1;
             else
                 ret = 0;
@@ -117,7 +117,7 @@ uint8_t Register::checkCond(uint8_t cond)
                 ret = 0;
             break;
         case 13 :
-            if((PSR[psrZ] == 1) && (PSR[psrN] != PSR[psrV]))
+            if((PSR[psrZ] == 1) || (PSR[psrN] != PSR[psrV]))
                 ret = 1;
             else
                 ret = 0;
