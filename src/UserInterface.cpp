@@ -14,21 +14,23 @@ Instruction* ist = Instruction::getInstance();
 
 void UserInterface::printPreface()
 {
-    printf("\n   -------------------------------------------------------------\n");
+    printf("\n   ----------------------------------------------------------------\n");
     printf("   Instruction Decoder\n");
     printf("   (ARM architecture version: ARMv6-M)\n");
-    printf("   -------------------------------------------------------------\n");
+    printf("   ----------------------------------------------------------------\n");
     printf("   AUTHOR     :   YG Cho (whdlgp@gmail.com)\n");
     printf("   VERSION    :   1.0\n");
     printf("   Copyright (c) 2016 Internet Computing Lab., SeoulTech\n");
-    printf("   -------------------------------------------------------------\n\n");
-    printf("   How quit this program  : just type 'q' and enter. Simple! yei!-\n");
-    printf("   Show break point       : just type 'b' and enter. yei!---------\n");
-    printf("   Set break point        : type 'b' and hex address, like \"b 4A\"-\n");
-    printf("   Step by step debug     : just type 's' and enter. Boom!--------\n");
-    printf("   Run(stop at breakpoint): just type 'r' and enter. Bang!--------\n");
-    printf("   Verbose                : toogle Run verbosity with 'v'---------\n");
-    printf("   Finally, it will store the memory in dumpfile!----------------\n");
+    printf("   ----------------------------------------------------------------\n\n");
+    printf("   How quit this program  : just type 'q' and enter. Simple! yei!--\n");
+    printf("   Show break point       : just type 'b' and enter. yei!----------\n");
+    printf("   Set break point        : type 'b'  and hex address (\"b 4A\")-----\n");
+    printf("   Set register           : type 'R n' and hex address (\"R 1 4A\")--\n");
+    printf("   Show memory            : type 'd'  and hex address (\"d 4A\")-----\n");
+    printf("   Step by step debug     : just type 's' and enter. Boom!---------\n");
+    printf("   Run(stop at breakpoint): just type 'r' and enter. Bang!---------\n");
+    printf("   Verbose                : toogle Run verbosity with 'v'----------\n");
+    printf("   Finally, it will store the memory in dumpfile!------------------\n");
 }
 
 void UserInterface::printEndMassage()
@@ -78,6 +80,7 @@ int8_t UserInterface::receiveInput(uint8_t* state, uint8_t* showList, uint32_t* 
     uint8_t inputCnt = 0;
 
     int8_t ret;
+    int i;
 
     scanf(" %[^\n]", str);
     inputStr[0] = strtok(str, " ");
@@ -89,7 +92,7 @@ int8_t UserInterface::receiveInput(uint8_t* state, uint8_t* showList, uint32_t* 
         inputCnt++;
     }
 
-    if((inputCnt == 1) || (inputCnt == 2))
+    if(inputCnt >= 1)
     {
         ret = inputCnt;
 
@@ -97,6 +100,43 @@ int8_t UserInterface::receiveInput(uint8_t* state, uint8_t* showList, uint32_t* 
             *state = EXCUTEONE;
         else if(!strcmp(inputStr[0], "r"))
             *state = EXCUTEALL;
+        else if(!strcmp(inputStr[0], "R"))
+        {
+            if(inputCnt < 2)
+            {
+                printf("invalid register\n");
+            }
+            else
+            {
+                sscanf(inputStr[1], "%d", &i);
+
+                if((i < 0) || (i > 15))
+                {
+                    printf("invalid register\n", i);
+                }
+                else if (inputCnt >= 2)
+                {
+                    if (inputCnt == 3)
+                    {
+                        sscanf(inputStr[2], "%X", hex);
+                        reg->R[i] = *hex;
+                    }
+                    printf("reg[%d ] = 0x%08X", i, reg->R[i]);
+                }
+            }
+        }
+        else if(!strcmp(inputStr[0], "d"))
+        {
+            if(inputCnt < 2)
+            {
+                printf("missing address\n");
+            }
+            else
+            {
+                sscanf(inputStr[1], "%X", hex);
+                printf("reg[%d ] = 0x%08X", i, mem->read4Byte(*hex));
+            }
+        }
         else if(!strcmp(inputStr[0], "b"))
         {
             *state = BREAKPOINT;
