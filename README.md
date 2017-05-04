@@ -64,7 +64,9 @@ Only support Thread mode
 ### Usage
 * How quit this program  : just type 'q' and enter.
 * Show break point       : just type 'b' and enter.
-* Set break point        : type 'b' and hex address, like "b 4A"
+* Set break point        : type 'b'   and hex address ("b 4A")
+* Set register           : type 'R n' and hex address ("R 1 4A")
+* Show memory            : type 'd'   and hex address ("d 4A")
 * Step by step debug     : just type 's' and enter.
 * Run(stop at breakpoint): just type 'r' and enter.
 * Verbose                : toogle Run verbosity with 'v'

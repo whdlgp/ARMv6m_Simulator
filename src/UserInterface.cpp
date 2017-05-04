@@ -24,9 +24,9 @@ void UserInterface::printPreface()
     printf("   ----------------------------------------------------------------\n\n");
     printf("   How quit this program  : just type 'q' and enter. Simple! yei!--\n");
     printf("   Show break point       : just type 'b' and enter. yei!----------\n");
-    printf("   Set break point        : type 'b'  and hex address (\"b 4A\")-----\n");
+    printf("   Set break point        : type 'b'   and hex address (\"b 4A\")----\n");
     printf("   Set register           : type 'R n' and hex address (\"R 1 4A\")--\n");
-    printf("   Show memory            : type 'd'  and hex address (\"d 4A\")-----\n");
+    printf("   Show memory            : type 'd'   and hex address (\"d 4A\")----\n");
     printf("   Step by step debug     : just type 's' and enter. Boom!---------\n");
     printf("   Run(stop at breakpoint): just type 'r' and enter. Bang!---------\n");
     printf("   Verbose                : toogle Run verbosity with 'v'----------\n");
