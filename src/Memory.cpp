@@ -35,17 +35,23 @@ void Memory::init(char* binFile, char* dumpFile)
 
 uint8_t Memory::readByte(uint32_t index)
 {
+    index = relocateSRAM(index);
+
     return this->mem[index];
 }
 
 uint16_t Memory::read2Byte(uint32_t index)
 {
+    index = relocateSRAM(index);
+
     return this->mem[index]
            | (this->mem[index + 1] << 8);
 }
 
 uint32_t Memory::read4Byte(uint32_t index)
 {
+    index = relocateSRAM(index);
+
     return  this->mem[index]
             | (this->mem[index + 1] << 8)
             | (this->mem[index + 2] << 16)
@@ -54,21 +60,37 @@ uint32_t Memory::read4Byte(uint32_t index)
 
 void Memory::writeByte(uint32_t index, uint8_t data)
 {
+    index = relocateSRAM(index);
+
     this->mem[index] = data;
 }
 
 void Memory::write2Byte(uint32_t index, uint16_t data)
 {
+    index = relocateSRAM(index);
+
     this->mem[index] = data & 0xff;
     this->mem[index + 1] = (data >> 8) & 0xff;
 }
 
 void Memory::write4Byte(uint32_t index, uint32_t data)
 {
+    index = relocateSRAM(index);
+
     this->mem[index] = data & 0xff;
     this->mem[index + 1] = (data >> 8) & 0xff;
     this->mem[index + 2] = (data >> 16) & 0xff;
     this->mem[index + 3] = (data >> 24) & 0xff;
+}
+
+uint32_t Memory::relocateSRAM(uint32_t index)
+{
+    if (index >= SRAM_BASE)
+    {
+        index = index - SRAM_BASE + MEM_MAXSIZE;
+    }
+
+    return index;
 }
 
 void Memory::dumpPrint()

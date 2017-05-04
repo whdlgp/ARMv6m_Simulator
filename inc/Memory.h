@@ -13,6 +13,10 @@
 #define MEM_MAXSIZE 0x40000
 #define MEM_BASE 0x00
 
+// typical Cortex-M0 SRAM size and base address, relocated after MEM_MAXSIZE
+#define SRAM_MAXSIZE 0x20000
+#define SRAM_BASE 0x20000000
+
 class Memory
 {
 public :
@@ -36,11 +40,13 @@ public :
     void write2Byte(uint32_t index, uint16_t data);
     void write4Byte(uint32_t index, uint32_t data);
 
+    uint32_t relocateSRAM(uint32_t index);
+
     void dumpPrint();
 private :
     static Memory memInst;
 
-    uint8_t mem[MEM_MAXSIZE];
+    uint8_t mem[MEM_MAXSIZE + SRAM_MAXSIZE];
     const char* dumpFileName;
     const char* instFileName;
 };
