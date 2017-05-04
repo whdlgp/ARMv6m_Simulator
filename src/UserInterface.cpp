@@ -134,7 +134,7 @@ int8_t UserInterface::receiveInput(uint8_t* state, uint8_t* showList, uint32_t* 
             else
             {
                 sscanf(inputStr[1], "%X", hex);
-                printf("reg[%d ] = 0x%08X", i, mem->read4Byte(*hex));
+                printf("0x%x = 0x%08X", *hex, mem->read4Byte(*hex));
             }
         }
         else if(!strcmp(inputStr[0], "b"))
