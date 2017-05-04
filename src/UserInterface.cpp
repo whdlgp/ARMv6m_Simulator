@@ -102,27 +102,19 @@ int8_t UserInterface::receiveInput(uint8_t* state, uint8_t* showList, uint32_t* 
             *state = EXCUTEALL;
         else if(!strcmp(inputStr[0], "R"))
         {
-            if(inputCnt < 2)
+            if(inputCnt != 3)
             {
-                printf("invalid register\n");
+                *state = STATEERROR;
+                if(inputCnt < 2)
+                    printf("invalid input, write register number and data\n");
+                else
+                    printf("missed register number or data");
             }
             else
             {
-                sscanf(inputStr[1], "%d", &i);
-
-                if((i < 0) || (i > 15))
-                {
-                    printf("invalid register\n", i);
-                }
-                else if (inputCnt >= 2)
-                {
-                    if (inputCnt == 3)
-                    {
-                        sscanf(inputStr[2], "%X", hex);
-                        reg->R[i] = *hex;
-                    }
-                    printf("reg[%d ] = 0x%08X", i, reg->R[i]);
-                }
+                *state = SETREG;
+                sscanf(inputStr[1], "%d", &(this->regManualsetData[0]));
+                sscanf(inputStr[2], "%X", &(this->regManualsetData[1]));
             }
         }
         else if(!strcmp(inputStr[0], "d"))
@@ -205,6 +197,10 @@ int8_t UserInterface::inputStateMachine(uint8_t state, uint8_t showList, uint32_
             breakpointShow();
             break;
         }
+        break;
+    case SETREG:
+         //set register manually
+        RegisterManualSet();
         break;
     case SHUTDOWN:
         exitFlag = 1;
@@ -345,6 +341,23 @@ void UserInterface::breakpointProcess(uint32_t addr)
     else
     {
         breakpointDelet(index);
+    }
+}
+
+void UserInterface::RegisterManualSet()
+{
+    uint32_t index = this->regManualsetData[0];
+    uint32_t data = this->regManualsetData[1];
+
+    if((index < 0) || (index > 15))
+    {
+        printf("invalid register %d\n", index);
+    }
+    else
+    {
+        reg->R[index] = data; //put received value in register directly
+
+        printf("reg[%d ] = 0x%08X", index, reg->R[index]);
     }
 }
 

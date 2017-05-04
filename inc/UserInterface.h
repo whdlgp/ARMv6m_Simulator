@@ -20,6 +20,7 @@ enum
     BREAKPOINT,
     STATEERROR,
     SHUTDOWN,
+    SETREG,
 
     SETPOINT = 0,
     SHOWLIST,
@@ -33,6 +34,8 @@ public :
         breakpointCount = 0;
         memset(breakpointList, 0x0, MEM_MAXSIZE);
         verbose = false;
+        regManualsetData[0] = 0;
+        regManualsetData[1] = 0;
     }
     static UserInterface* getInstance() { return &interfaceInst; }
 
@@ -58,12 +61,17 @@ public :
 
     void breakpointProcess(uint32_t addr);
 
+    void RegisterManualSet();
+
     void excuteAll();
 
 private :
     static UserInterface interfaceInst;
 
     bool verbose;
+
+    uint32_t regManualsetData[2]; //if set register manually, receive register index and hex data here
+
     uint32_t breakpointCount;
     uint32_t breakpointList[MEM_MAXSIZE];
 };
