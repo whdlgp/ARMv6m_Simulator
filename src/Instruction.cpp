@@ -9,6 +9,10 @@
 #include "Memory.h"
 #include "Register.h"
 
+#define LSL 0
+#define LSR 1
+#define ROR 2
+
 Instruction Instruction::instInst;
 
 static Memory* mem = Memory::getInstance();
@@ -38,34 +42,47 @@ uint8_t Instruction::getZERO(uint32_t inst)
     return (inst) ? 0x0 : 0x1;
 }
 
-uint8_t Instruction::getCarry(uint64_t result)
+uint32_t Instruction::addWithCarry(uint32_t op1, uint32_t op2, uint32_t carryInAsBit)
 {
-    uint16_t highBit = (result >> 32) & 0xffffffff;
+    int carryIn = carryInAsBit ? 1 : 0;
+    uint64_t unsignedSum = (uint64_t)op1 + (uint64_t)op2 + (uint64_t)carryIn;
+    int64_t signedSum = (int64_t)(int32_t)op1 + (int64_t)(int32_t)op2 + (int64_t)carryIn;
+    uint32_t result = (uint32_t)unsignedSum;
 
-    if(highBit != 0x00)
-        return 1;
-    else
-        return 0;
+    reg->PSR[psrC] = ((uint64_t)result == unsignedSum) ? 0 : 1;
+    reg->PSR[psrV] = ((int64_t)(int32_t)result == signedSum) ? 0 : 1;
+
+    return result;
 }
-uint8_t Instruction::getBorrow(uint64_t result)
+
+uint32_t Instruction::shiftC(uint32_t value, uint8_t type, uint32_t shift, uint32_t carryIn)
 {
-    if(((result >> 32) & 0x01) == 0x00)
-        return 1;
-    else
-        return 0;
-}
-uint8_t Instruction::getOverflow(uint32_t op1, uint32_t op2, uint32_t result)
-{
-    if(getMSB(op1) == getMSB(op2))
+    uint32_t result = value;
+    reg->PSR[psrC] = carryIn;
+
+    if (shift != 0)
     {
-        if(getMSB(op1) != getMSB(result))
-            return 1;
-        else
-            return 0;
+        switch (type)
+        {
+        case LSL:
+             reg->PSR[psrC] = (shift > 32) ? 0 : value & (1 << (32 - shift));
+             result = (shift > 31) ? 0 : value << shift;
+             break;
+        case LSR:
+             reg->PSR[psrC] = (shift > 32) ? 0 : (value & (1 << (shift - 1)));
+             result = (shift > 31) ? 0 : value >> shift;
+             break;
+        case ROR:
+             uint32_t m = shift & 31U;
+             result = ((m > 32) ? 0 : (value & (1 << (m - 1)))) | (((32-m) > 32) ? 0 : value & (1 << m));
+             reg->PSR[psrC] = result & (1 << 31);
+             break;
+        }
     }
-    else
-        return 0;
+
+    return result;
 }
+
 uint8_t Instruction::bitCount(uint32_t bitString)
 {
     uint8_t i;
@@ -81,6 +98,7 @@ uint8_t Instruction::bitCount(uint32_t bitString)
 
     return count;
 }
+
 int32_t Instruction::signedExt(uint8_t bitNum, uint32_t data)
 {
     uint32_t extBit = 0xffffffff;
@@ -94,6 +112,7 @@ int32_t Instruction::signedExt(uint8_t bitNum, uint32_t data)
         return data;
     }
 }
+
 uint32_t Instruction::align(uint32_t op1,uint32_t op2)
 {
     return op2*(op1/op2);
@@ -286,6 +305,7 @@ void Instruction::class16bit1(uint16_t inst)
         instName("UNKNOWN");
     }
 }
+
 void Instruction::class16bit2(uint16_t inst)
 {
     //Data processing
@@ -379,6 +399,7 @@ void Instruction::class16bit2(uint16_t inst)
             break;
     }
 }
+
 void Instruction::class16bit3(uint16_t inst)
 {
     //Special data instruction, branch, exchange
@@ -425,12 +446,14 @@ void Instruction::class16bit3(uint16_t inst)
         instName("UNKNOWN");
     }
 }
+
 void Instruction::class16bit4(uint16_t inst)
 {
     //LDR literal
     instName("LDR (literal)");
     ldr_literal(inst);
 }
+
 void Instruction::class16bit5(uint16_t inst)
 {
     //load, store single data
@@ -569,18 +592,21 @@ void Instruction::class16bit5(uint16_t inst)
         instName("UNKNOWN");
     }
 }
+
 void Instruction::class16bit6(uint16_t inst)
 {
     //generate PC-relative addr, ADR
     instName("ADR (PC-relative)");
     adr_pc(inst);
 }
+
 void Instruction::class16bit7(uint16_t inst)
 {
     //generate SP-relative addr, ADD
     instName("ADD (SP-relative)");
     add_sp(inst);
 }
+
 void Instruction::class16bit8(uint16_t inst)
 {
     //Miscellaneous
@@ -680,18 +706,21 @@ void Instruction::class16bit8(uint16_t inst)
         instName("UNKNOWN");
     }
 }
+
 void Instruction::class16bit9(uint16_t inst)
 {
     //STM, STMIA, STMEA
     instName("STM");
     stm(inst);
 }
+
 void Instruction::class16bit10(uint16_t inst)
 {
     //LDM, LDMIA, LDMFD
     instName("LDM");
     ldm(inst);
 }
+
 void Instruction::class16bit11(uint16_t inst)
 {
     //Conditional Branch, Supervisor call
@@ -702,7 +731,7 @@ void Instruction::class16bit11(uint16_t inst)
     if(opcode3 != 0x07)
     {
         //Conditional B
-        instName("B (coditional)");
+        instName("B (conditional)");
         b_cond(inst);
     }
     else
@@ -725,6 +754,7 @@ void Instruction::class16bit11(uint16_t inst)
         }
     }
 }
+
 void Instruction::class16bit12(uint16_t inst)
 {
     //Unconditional Branch, B
@@ -738,11 +768,10 @@ void Instruction::lsl_imme(uint16_t inst)
     uint8_t rm = (inst >> 3) & 0x07;
     uint8_t imme = (inst >> 6) & 0x1f;
 
-    reg->R[rd] = reg->R[rm] << imme;
+    reg->R[rd] = shiftC(reg->R[rm], LSL, imme, reg->PSR[psrC]);
 
     reg->PSR[psrN] = (reg->R[rd] >> 31) & 0x01;
     reg->PSR[psrZ] = reg->R[rd] ? 0x0 : 0x1;
-    reg->PSR[psrC] = (reg->R[rm] >> imme) & 0x01;
 }
 
 void Instruction::lsr_imme(uint16_t inst)
@@ -751,11 +780,12 @@ void Instruction::lsr_imme(uint16_t inst)
     uint8_t rm = (inst >> 3) & 0x07;
     uint8_t imme = (inst >> 6) & 0x1f;
 
-    reg->R[rd] = reg->R[rm] >> imme;
+    imme = (imme == 0) ? 32 : imme;
+
+    reg->R[rd] = shiftC(reg->R[rm], LSR, imme, reg->PSR[psrC]);
 
     reg->PSR[psrN] = (reg->R[rd] >> 31) & 0x01;
     reg->PSR[psrZ] = reg->R[rd] ? 0x0 : 0x1;
-    reg->PSR[psrC] = (reg->R[rm] >> (imme-1)) & 0x01;
 }
 
 void Instruction::asr_imme(uint16_t inst)
@@ -784,15 +814,11 @@ void Instruction::add_register(uint16_t inst)
     uint8_t rd = inst & 0x07;
     uint8_t rn = (inst >> 3) & 0x07;
     uint8_t rm = (inst >> 6) & 0x07;
-    uint64_t result = 0x0;
 
-    result = reg->R[rn] + reg->R[rm];
-    reg->R[rd] = result & 0xffffffff;
+    reg->R[rd] = addWithCarry(reg->R[rn], reg->R[rm], 0);
 
     reg->PSR[psrN] = getMSB(reg->R[rd]);
     reg->PSR[psrZ] = getZERO(reg->R[rd]);
-    reg->PSR[psrC] = getCarry(result);
-    reg->PSR[psrV] = getOverflow(reg->R[rn], reg->R[rm], reg->R[rd]);
 }
 
 void Instruction::sub_register(uint16_t inst)
@@ -800,15 +826,11 @@ void Instruction::sub_register(uint16_t inst)
     uint8_t rd = inst & 0x07;
     uint8_t rn = (inst >> 3) & 0x07;
     uint8_t rm = (inst >> 6) & 0x07;
-    uint64_t result = 0x0;
 
-    result = (borrowCheckBit + reg->R[rn]) - reg->R[rm];
-    reg->R[rd] = result & 0xffffffff;
+    reg->R[rd] = addWithCarry(reg->R[rn], ~reg->R[rm], 1);
 
     reg->PSR[psrN] = getMSB(reg->R[rd]);
     reg->PSR[psrZ] = getZERO(reg->R[rd]);
-    reg->PSR[psrC] = getBorrow(result);
-    reg->PSR[psrV] = getOverflow(reg->R[rn], reg->R[rm], reg->R[rd]);
 }
 
 void Instruction::add_3bit_imme(uint16_t inst)
@@ -816,15 +838,11 @@ void Instruction::add_3bit_imme(uint16_t inst)
     uint8_t rd = inst & 0x07;
     uint8_t rn = (inst >> 3) & 0x07;
     uint8_t imm3 = (inst >> 6) & 0x07;
-    uint64_t result = 0x0;
 
-    result = reg->R[rn] + imm3;
-    reg->R[rd] = result & 0xffffffff;
+    reg->R[rd] = addWithCarry(reg->R[rn], imm3, 0);
 
     reg->PSR[psrN] = getMSB(reg->R[rd]);
     reg->PSR[psrZ] = getZERO(reg->R[rd]);
-    reg->PSR[psrC] = getCarry(result);
-    reg->PSR[psrV] = getOverflow(reg->R[rn], imm3, reg->R[rd]);
 }
 
 void Instruction::sub_3bit_imme(uint16_t inst)
@@ -834,13 +852,10 @@ void Instruction::sub_3bit_imme(uint16_t inst)
     uint8_t imm3 = (inst >> 6) & 0x07;
     uint64_t result = 0x0;
 
-    result = (borrowCheckBit + reg->R[rn]) - imm3;
-    reg->R[rd] = result & 0xffffffff;
+    reg->R[rd] = addWithCarry(reg->R[rn], ~imm3, 1);
 
     reg->PSR[psrN] = getMSB(reg->R[rd]);
     reg->PSR[psrZ] = getZERO(reg->R[rd]);
-    reg->PSR[psrC] = getBorrow(result);
-    reg->PSR[psrV] = getOverflow(reg->R[rn], imm3, reg->R[rd]);
 }
 
 void Instruction::mov_imme(uint16_t inst)
@@ -859,15 +874,11 @@ void Instruction::cmp_imme(uint16_t inst)
     uint8_t imm8 = inst & 0xff;
     uint8_t rn = (inst >> 8) & 0x07;
     uint64_t result = 0x0;
-    uint32_t result32 = 0x0;
 
-    result = (borrowCheckBit + reg->R[rn]) - imm8;
-    result32 = result & 0xffffffff;
+    result = addWithCarry(reg->R[rn], ~imm8, 1) & 0xffffffff;
 
-    reg->PSR[psrN] = getMSB(result32);
-    reg->PSR[psrZ] = getZERO(result32);
-    reg->PSR[psrC] = getBorrow(result);
-    reg->PSR[psrV] = getOverflow(reg->R[rn], imm8, result32);
+    reg->PSR[psrN] = getMSB(result);
+    reg->PSR[psrZ] = getZERO(result);
 }
 
 void Instruction::add_8bit_imme(uint16_t inst)
@@ -877,13 +888,10 @@ void Instruction::add_8bit_imme(uint16_t inst)
     uint64_t result = 0x0;
     uint32_t rdnTemp = reg->R[rdn];
 
-    result = reg->R[rdn] + imm8;
-    reg->R[rdn] = result & 0xffffffff;
+    reg->R[rdn] = addWithCarry(rdnTemp, imm8, 0);
 
     reg->PSR[psrN] = getMSB(reg->R[rdn]);
     reg->PSR[psrZ] = getZERO(reg->R[rdn]);
-    reg->PSR[psrC] = getCarry(result);
-    reg->PSR[psrV] = getOverflow(rdnTemp, imm8, reg->R[rdn]);
 }
 
 void Instruction::sub_8bit_imme(uint16_t inst)
@@ -893,13 +901,10 @@ void Instruction::sub_8bit_imme(uint16_t inst)
     uint64_t result = 0x0;
     uint32_t rdnTemp = reg->R[rdn];
 
-    result = (borrowCheckBit + reg->R[rdn]) - imm8;
-    reg->R[rdn] = result & 0xffffffff;
+    reg->R[rdn] = addWithCarry(rdnTemp, ~imm8, 1);
 
     reg->PSR[psrN] = getMSB(reg->R[rdn]);
     reg->PSR[psrZ] = getZERO(reg->R[rdn]);
-    reg->PSR[psrC] = getBorrow(result);
-    reg->PSR[psrV] = getOverflow(rdnTemp, imm8, reg->R[rdn]);
 }
 
 void Instruction::and_register(uint16_t inst)
@@ -928,26 +933,24 @@ void Instruction::lsl_register(uint16_t inst)
 {
     uint8_t rdn = inst & 0x07;
     uint8_t rm = (inst >> 3) & 0x07;
-    uint32_t rdnTemp = reg->R[rdn];
+    uint8_t shift = reg->R[rm] & 0xff;
 
-    reg->R[rdn] = reg->R[rdn] << reg->R[rm];
+    reg->R[rdn] = shiftC(reg->R[rdn], LSL, shift, reg->PSR[psrC]);
 
     reg->PSR[psrN] = (reg->R[rdn] >> 31) & 0x01;
     reg->PSR[psrZ] = reg->R[rdn] ? 0x0 : 0x1;
-    reg->PSR[psrC] = (rdnTemp >> reg->R[rm]) & 0x01;
 }
 
 void Instruction::lsr_register(uint16_t inst)
 {
     uint8_t rdn = inst & 0x07;
     uint8_t rm = (inst >> 3) & 0x07;
-    uint32_t rdnTemp = reg->R[rdn];
+    uint8_t shift = reg->R[rm] & 0xff;
 
-    reg->R[rdn] = reg->R[rdn] >> reg->R[rm];
+    reg->R[rdn] = shiftC(reg->R[rdn], LSR, shift, reg->PSR[psrC]);
 
     reg->PSR[psrN] = (reg->R[rdn] >> 31) & 0x01;
     reg->PSR[psrZ] = reg->R[rdn] ? 0x0 : 0x1;
-    reg->PSR[psrC] = (rdnTemp >> (reg->R[rm]-1)) & 0x01;
 }
 
 void Instruction::asr_register(uint16_t inst)
@@ -976,15 +979,11 @@ void Instruction::adc_register(uint16_t inst)
     uint8_t rdn = inst & 0x07;
     uint8_t rm = (inst >> 3) & 0x07;
     uint32_t rdnTemp = reg->R[rdn];
-    uint64_t result = 0x0;
 
-    result = reg->R[rdn] + reg->R[rm] + reg->PSR[psrC];
-    reg->R[rdn] = result & 0xffffffff;
+    reg->R[rdn] = addWithCarry(rdnTemp, reg->R[rm], reg->PSR[psrC]);
 
     reg->PSR[psrN] = getMSB(reg->R[rdn]);
     reg->PSR[psrZ] = getZERO(reg->R[rdn]);
-    reg->PSR[psrC] = getCarry(result);
-    reg->PSR[psrV] = getOverflow(rdnTemp, reg->R[rm], reg->R[rdn]);
 }
 
 void Instruction::sbc_register(uint16_t inst)
@@ -992,36 +991,23 @@ void Instruction::sbc_register(uint16_t inst)
     uint8_t rdn = inst & 0x07;
     uint8_t rm = (inst >> 3) & 0x07;
     uint32_t rdnTemp = reg->R[rdn];
-    uint64_t result = 0x0;
 
-    result = (borrowCheckBit + reg->R[rdn]) - reg->R[rm] - ((~reg->PSR[psrC]) & 0x01);
-    reg->R[rdn] = result & 0xffffffff;
+    reg->R[rdn] = addWithCarry(rdnTemp, ~reg->R[rm], reg->PSR[psrC]);
 
     reg->PSR[psrN] = getMSB(reg->R[rdn]);
     reg->PSR[psrZ] = getZERO(reg->R[rdn]);
-    reg->PSR[psrC] = getBorrow(result);
-    reg->PSR[psrV] = getOverflow(rdnTemp, reg->R[rm], reg->R[rdn]);
 }
 
 void Instruction::ror_register(uint16_t inst)
 {
     uint8_t rdn = inst & 0x07;
     uint8_t rm = (inst >> 3) & 0x07;
-    //uint32_t rdnTemp = reg->R[rdn];
+    uint8_t shift = reg->R[rm] & 0xff;
 
-    uint64_t buf64 = ((uint64_t)reg->R[rdn] << 32);
-    uint32_t highBit;
-    uint32_t lowBit;
-
-    buf64 = buf64 >> reg->R[rm];
-    highBit = (buf64 >> 32) & 0xffffffff;
-    lowBit = buf64 & 0xffffffff;
-
-    reg->R[rdn] = highBit | lowBit;
+    reg->R[rdn] = shiftC(reg->R[rdn], ROR, shift, reg->PSR[psrC]);
 
     reg->PSR[psrN] = getMSB(reg->R[rdn]);
     reg->PSR[psrZ] = getZERO(reg->R[rdn]);
-    reg->PSR[psrC] = (lowBit >> 31) & 0x01;
 }
 
 void Instruction::tst_register(uint16_t inst)
@@ -1042,13 +1028,10 @@ void Instruction::rsb_imme(uint16_t inst)
     uint8_t rn = (inst >> 3) & 0x07;
     uint64_t result = 0x0;
 
-    result = borrowCheckBit - reg->R[rn];
-    reg->R[rd] = result & 0xffffffff;
+    reg->R[rd] = addWithCarry(~reg->R[rn], 0, 1);
 
     reg->PSR[psrN] = getMSB(reg->R[rd]);
     reg->PSR[psrZ] = getZERO(reg->R[rd]);
-    reg->PSR[psrC] = getBorrow(result);
-    reg->PSR[psrV] = getOverflow(0x0, reg->R[rn], reg->R[rd]);
 }
 
 void Instruction::cmp_register(uint16_t inst)
@@ -1056,31 +1039,23 @@ void Instruction::cmp_register(uint16_t inst)
     uint8_t rn = inst & 0x07;
     uint8_t rm = (inst >> 3) & 0x07;
     uint64_t result = 0x0;
-    uint32_t result32 = 0x0;
 
-    result = (borrowCheckBit + reg->R[rn]) - reg->R[rm];
-    result32 = result & 0xffffffff;
+    result = addWithCarry(reg->R[rn], ~reg->R[rm], 1);
 
-    reg->PSR[psrN] = getMSB(result32);
-    reg->PSR[psrZ] = getZERO(result32);
-    reg->PSR[psrC] = getBorrow(result);
-    reg->PSR[psrV] = getOverflow(reg->R[rn], reg->R[rm], result32);
+    reg->PSR[psrN] = getMSB(result);
+    reg->PSR[psrZ] = getZERO(result);
 }
 
 void Instruction::cmn_register(uint16_t inst)
 {
     uint8_t rn = inst & 0x07;
     uint8_t rm = (inst >> 3) & 0x07;
-    uint64_t result = 0x0;
-    uint32_t result32 = 0x0;
+    uint32_t result = 0x0;
 
-    result = (borrowCheckBit + reg->R[rn]) - (~reg->R[rm] + 0x1);
-    result32 = result & 0xffffffff;
+    result = addWithCarry(reg->R[rn], reg->R[rm], 0);
 
-    reg->PSR[psrN] = getMSB(result32);
-    reg->PSR[psrZ] = getZERO(result32);
-    reg->PSR[psrC] = getBorrow(result);
-    reg->PSR[psrV] = getOverflow(reg->R[rn], reg->R[rm], result32);
+    reg->PSR[psrN] = getMSB(result);
+    reg->PSR[psrZ] = getZERO(result);
 }
 
 void Instruction::orr_register(uint16_t inst)
@@ -1133,34 +1108,23 @@ void Instruction::add_register_nonsp(uint16_t inst)
     uint8_t rm = (inst >> 3) & 0x0f;
     uint8_t dn = (inst >> 7) & 0x01;
     uint8_t dnrdn = (dn << 3) | rdn;
-    uint64_t result = 0x0;
-    uint32_t rdnTemp = reg->R[dnrdn];
 
-    result = reg->R[dnrdn] + reg->R[rm];
-    reg->R[dnrdn] = result & 0xffffffff;
+    reg->R[dnrdn] = addWithCarry(reg->R[dnrdn], reg->R[rm], 0);
 
     reg->PSR[psrN] = getMSB(reg->R[dnrdn]);
     reg->PSR[psrZ] = getZERO(reg->R[dnrdn]);
-    reg->PSR[psrC] = getCarry(result);
-    reg->PSR[psrV] = getOverflow(rdnTemp, reg->R[rm], reg->R[dnrdn]);
 }
 
 void Instruction::cmp_register_n(uint16_t inst)
 {
-    uint8_t rn = inst & 0x07;
-    uint8_t rm = (inst >> 3) & 0x0f;
-    uint8_t n = (inst >> 7) & 0x01;
-    uint8_t nrn = (n << 3) & rn;
+    uint8_t rn = ((inst & (1 << 7)) >> 4) | (inst & 0x7);
+    uint8_t rm = (inst & (0xf << 3)) >> 3;
     uint64_t result = 0x0;
-    uint32_t result32 = 0x0;
 
-    result = (borrowCheckBit + reg->R[nrn]) - reg->R[rm];
-    result32 = result & 0xffffffff;
+    result = addWithCarry(reg->R[rn], ~reg->R[rm], 1);
 
-    reg->PSR[psrN] = getMSB(result32);
-    reg->PSR[psrZ] = getZERO(result32);
-    reg->PSR[psrC] = getBorrow(result);
-    reg->PSR[psrV] = getOverflow(reg->R[nrn], reg->R[rm], result32);
+    reg->PSR[psrN] = getMSB(result);
+    reg->PSR[psrZ] = getZERO(result);
 }
 
 void Instruction::mov_register_nons(uint16_t inst)
@@ -1168,7 +1132,7 @@ void Instruction::mov_register_nons(uint16_t inst)
     uint8_t rd = inst & 0x07;
     uint8_t rm = (inst >> 3) & 0x0f;
     uint8_t d = (inst >> 7) & 0x01;
-    uint8_t drd = (d << 3) & rd;
+    uint8_t drd = (d << 3) | rd & 0xf;
 
     reg->R[drd] = reg->R[rm];
 }
@@ -1425,7 +1389,7 @@ void Instruction::uxth(uint16_t inst)
     uint8_t rd = inst & 0x07;
     uint8_t rm = (inst >> 3) & 0x07;
 
-    reg->R[rd] = (int16_t)(reg->R[rm] & 0xffff);
+    reg->R[rd] = reg->R[rm] & 0xffff;
 }
 
 void Instruction::uxtb(uint16_t inst)
@@ -1433,7 +1397,7 @@ void Instruction::uxtb(uint16_t inst)
     uint8_t rd = inst & 0x07;
     uint8_t rm = (inst >> 3) & 0x07;
 
-    reg->R[rd] = (int8_t)(reg->R[rm] & 0xff);
+    reg->R[rd] = reg->R[rm] & 0xff;
 }
 
 void Instruction::push_mult(uint16_t inst)
@@ -1591,7 +1555,7 @@ void Instruction::b_cond(uint16_t inst)
     uint8_t cond = (inst >> 8) & 0x0f;
 
     uint32_t data = imm8 << 1;
-    int32_t imm32 = signedExt(9, data);
+    int32_t imm32 = (((int32_t)imm8) << 24) >> 23;
 
     if(reg->checkCond(cond))
     {
@@ -1603,8 +1567,8 @@ void Instruction::b_uncond(uint16_t inst)
 {
     uint16_t imm11 = inst & 0x7ff;
     uint32_t data = imm11 << 1;
-    int32_t imm32 = signedExt(12, data);
 
+    int32_t imm32 = (((int32_t)imm11) << 21) >> 20;
     uint32_t addr = reg->R[PC] + imm32;
 
     reg->throwPC(addr);
@@ -1636,4 +1600,3 @@ void Instruction::bl(uint32_t inst)
 
     reg->throwPC(reg->R[PC] + imm32);
 }
-

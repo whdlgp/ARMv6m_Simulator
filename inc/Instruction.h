@@ -41,9 +41,9 @@ private :
     uint8_t getMSB(uint32_t inst);
     uint8_t getZERO(uint32_t inst);
 
-    uint8_t getCarry(uint64_t result);
-    uint8_t getBorrow(uint64_t result);
-    uint8_t getOverflow(uint32_t op1, uint32_t op2, uint32_t result);
+    uint32_t addWithCarry(uint32_t op1, uint32_t op2, uint32_t carryInAsBit);
+    uint32_t shiftC(uint32_t value, uint8_t type, uint32_t shift, uint32_t carryIn);
+
     uint8_t bitCount(uint32_t bitString);
     int32_t signedExt(uint8_t bitNum, uint32_t data);
 
