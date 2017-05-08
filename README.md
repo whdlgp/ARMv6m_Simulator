@@ -74,12 +74,23 @@ Only support Thread mode
 
 ![example image1](http://i.imgur.com/4O15uYH.png)
 
-### Others
+### Compilation and execution
 
-There is an example00.bin file for the example that simply repeats 10 times in the debug folder and a dump.txt file which stores the final state of the memory.
+* Testsuite:
 
-The src folder and the inc folder contain sources written in C ++. Compile it according to your environment.
+```
+make test
+./test_ARMv6m_Simulator
+```
 
-### contact
+* Simulator:
+
+```
+make
+./ARMv6m_Simulator
+How to Use : $./(compiled program) (input file name) (dump file name)
+```
+
+### Contact
 ChoYG  
 whdlgp@gmail.com
