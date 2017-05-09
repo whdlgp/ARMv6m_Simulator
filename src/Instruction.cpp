@@ -65,17 +65,16 @@ uint32_t Instruction::shiftC(uint32_t value, uint8_t type, uint32_t shift, uint3
         switch (type)
         {
         case LSL:
-             reg->PSR[psrC] = (shift > 32) ? 0 : value & (1 << (32 - shift));
+             reg->PSR[psrC] = (shift > 32) ? 0 : (value >> (32 - shift)) & 1;
              result = (shift > 31) ? 0 : value << shift;
              break;
         case LSR:
-             reg->PSR[psrC] = (shift > 32) ? 0 : (value & (1 << (shift - 1)));
+             reg->PSR[psrC] = (shift > 32) ? 0 : (value >> (shift - 1) & 1);
              result = (shift > 31) ? 0 : value >> shift;
              break;
         case ROR:
-             uint32_t m = shift & 31U;
-             result = ((m > 32) ? 0 : (value & (1 << (m - 1)))) | (((32-m) > 32) ? 0 : value & (1 << m));
-             reg->PSR[psrC] = result & (1 << 31);
+             reg->PSR[psrC] = (value >> 31) & 1;
+             result = (value >> (shift % 32)) | (value << ((32 - (shift % 32)) & 31));
              break;
         }
     }

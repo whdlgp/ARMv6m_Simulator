@@ -155,15 +155,15 @@ int main()
     test_lslImmediateMovR7toR0_CarryUnmodified();
     test_lslImmediateMovR0toR7_ZeroResultAndCarryUnmodified();
     test_lslImmediateShiftR1by3_ResultInNegativeValue();
-    //test_lslImmediateShiftR1by4_HasCarryOut();
+    test_lslImmediateShiftR1by4_HasCarryOut();
     test_lslImmediateShiftR0by31_PushesLowestbitIntoSignBit();
-    //test_lslImmediateCarryOutFromHighestBit();
-    //test_lslImmediateCarryOutFromLowestBit();
+    test_lslImmediateCarryOutFromHighestBit();
+    test_lslImmediateCarryOutFromLowestBit();
 
     test_lslRegisterShiftR7by0_MinimumShift_CarryShouldBeUnmodified();
     test_lslRegisterShiftValue1by31_NegativeResult();
     test_lslRegisterShiftValue1by32_CarryOutFromLowestBit();
-    //test_lslRegisterShiftNegativeValueBy1_CarryOutFromHighestBit();
+    test_lslRegisterShiftNegativeValueBy1_CarryOutFromHighestBit();
     test_lslRegisterShiftValue1by33_NoCarry();
     test_lslRegisterShiftValuee1by255_MaximumShift();
     test_lslRegisterShiftValue1by256_ShouldBeTreatedAs0Shift_CarryUnmodified();
@@ -171,13 +171,13 @@ int main()
     test_lsrImmediateR2by1toR0();
     test_lsrImmediateR7by32toR0_ZeroResult();
     test_lsrImmediateR1by1toR7_CarryOut();
-    //test_lsrImmediateR0by32_CarryOutAndIsZero();
+    test_lsrImmediateR0by32_CarryOutAndIsZero();
 
     test_lsrRegisterShiftValue1by1_CarryOutFromLowestBit();
     test_lsrRegisterShiftValue1by0_MinimumShift_CarryUnmodified();
     test_lsrRegisterShiftValue2by1_NoCarry();
-    //test_lsrRegisterShiftNegativeValueBy31();
-    //test_lsrRegisterShiftNegativeValueBy32_CarryOutFromHighestBit();
+    test_lsrRegisterShiftNegativeValueBy31();
+    test_lsrRegisterShiftNegativeValueBy32_CarryOutFromHighestBit();
     test_lsrRegisterShiftNegativeValueBy33_ResultIsZero_CarryClear();
     test_lsrRegisterMaximumShiftOf255_ResultIsZero_CarryClear();
     test_lsrRegisterShiftOf256_ShouldBeTreatedAs0Shift_CarryUnmodified();
@@ -224,11 +224,11 @@ int main()
 
     //test_rorRegisterRotate1by1_CarryOutFromLowestBit();
     test_rorRegisterRotate1by0_MinimumShift_CarryUnmodified();
-    //test_rorRegisterRotate2by1_NoCarry();
-    //test_rorRegisterRotate16Bits();
+    test_rorRegisterRotate2by1_NoCarry();
+    test_rorRegisterRotate16Bits();
     //test_rorRegisterRotateWithShiftOf31();
-    //test_rorRegisterRotateBy32_CarryOutHighestBit();
-    //test_rorRegisterRotateBy33();
+    test_rorRegisterRotateBy32_CarryOutHighestBit();
+    test_rorRegisterRotateBy33();
     //test_rorRegisterRotateWithMaximumShiftOf255();
     test_rorRegisterRotateWithShiftOf256_ShouldBeTreatedAs0Shift_CarryUnmodified();
     test_rorRegisterRotate0by16();
