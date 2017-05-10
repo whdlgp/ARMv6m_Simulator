@@ -222,14 +222,14 @@ int main()
     test_revshPositiveValue();
     test_revshNegativeValue();
 
-    //test_rorRegisterRotate1by1_CarryOutFromLowestBit();
+    test_rorRegisterRotate1by1_CarryOutFromLowestBit();
     test_rorRegisterRotate1by0_MinimumShift_CarryUnmodified();
     test_rorRegisterRotate2by1_NoCarry();
     test_rorRegisterRotate16Bits();
-    //test_rorRegisterRotateWithShiftOf31();
+    test_rorRegisterRotateWithShiftOf31();
     test_rorRegisterRotateBy32_CarryOutHighestBit();
     test_rorRegisterRotateBy33();
-    //test_rorRegisterRotateWithMaximumShiftOf255();
+    test_rorRegisterRotateWithMaximumShiftOf255();
     test_rorRegisterRotateWithShiftOf256_ShouldBeTreatedAs0Shift_CarryUnmodified();
     test_rorRegisterRotate0by16();
 
