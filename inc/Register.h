@@ -36,7 +36,7 @@ public :
     static Register* getInstance() { return &regInst; }
 
     uint32_t R[REG_SIZE];
-    uint8_t PSR[PSR_SIZE];
+    uint32_t PSR[PSR_SIZE];
 
     void init();
 
