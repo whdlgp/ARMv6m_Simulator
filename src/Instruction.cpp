@@ -73,8 +73,8 @@ uint32_t Instruction::shiftC(uint32_t value, uint8_t type, uint32_t shift, uint3
              result = (shift > 31) ? 0 : value >> shift;
              break;
         case ROR:
-             reg->PSR[psrC] = (value >> 31) & 1;
              result = (value >> (shift % 32)) | (value << ((32 - (shift % 32)) & 31));
+             reg->PSR[psrC] = (result >> 31) & 1;
              break;
         }
     }
