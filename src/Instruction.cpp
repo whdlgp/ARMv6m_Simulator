@@ -814,7 +814,7 @@ void Instruction::add_register(uint16_t inst)
     uint8_t rn = (inst >> 3) & 0x07;
     uint8_t rm = (inst >> 6) & 0x07;
 
-    reg->R[rd] = addWithCarry(reg->R[rn], reg->R[rm], 0);
+    reg->regWriteWithPCcheck(rd, addWithCarry(reg->R[rn], reg->R[rm], 0));
 
     reg->PSR[psrN] = getMSB(reg->R[rd]);
     reg->PSR[psrZ] = getZERO(reg->R[rd]);
@@ -838,7 +838,7 @@ void Instruction::add_3bit_imme(uint16_t inst)
     uint8_t rn = (inst >> 3) & 0x07;
     uint8_t imm3 = (inst >> 6) & 0x07;
 
-    reg->R[rd] = addWithCarry(reg->R[rn], imm3, 0);
+    reg->regWriteWithPCcheck(rd, addWithCarry(reg->R[rn], imm3, 0));
 
     reg->PSR[psrN] = getMSB(reg->R[rd]);
     reg->PSR[psrZ] = getZERO(reg->R[rd]);
@@ -887,7 +887,7 @@ void Instruction::add_8bit_imme(uint16_t inst)
     uint64_t result = 0x0;
     uint32_t rdnTemp = reg->R[rdn];
 
-    reg->R[rdn] = addWithCarry(rdnTemp, imm8, 0);
+    reg->regWriteWithPCcheck(rdn, addWithCarry(rdnTemp, imm8, 0));
 
     reg->PSR[psrN] = getMSB(reg->R[rdn]);
     reg->PSR[psrZ] = getZERO(reg->R[rdn]);
@@ -979,7 +979,7 @@ void Instruction::adc_register(uint16_t inst)
     uint8_t rm = (inst >> 3) & 0x07;
     uint32_t rdnTemp = reg->R[rdn];
 
-    reg->R[rdn] = addWithCarry(rdnTemp, reg->R[rm], reg->PSR[psrC]);
+    reg->regWriteWithPCcheck(rdn, addWithCarry(rdnTemp, reg->R[rm], reg->PSR[psrC]));
 
     reg->PSR[psrN] = getMSB(reg->R[rdn]);
     reg->PSR[psrZ] = getZERO(reg->R[rdn]);
@@ -1108,7 +1108,7 @@ void Instruction::add_register_nonsp(uint16_t inst)
     uint8_t dn = (inst >> 7) & 0x01;
     uint8_t dnrdn = (dn << 3) | rdn;
 
-    reg->R[dnrdn] = addWithCarry(reg->R[dnrdn], reg->R[rm], 0);
+    reg->regWriteWithPCcheck(dnrdn, addWithCarry(reg->R[dnrdn], reg->R[rm], 0));
 
     reg->PSR[psrN] = getMSB(reg->R[dnrdn]);
     reg->PSR[psrZ] = getZERO(reg->R[dnrdn]);
@@ -1336,7 +1336,7 @@ void Instruction::adr_pc(uint16_t inst)
     uint8_t imm8 = inst & 0xff;
     uint8_t rd = (inst >> 8) & 0x07;
 
-    reg->R[rd] = align(reg->R[PC],4) + (imm8 << 2);
+    reg->regWriteWithPCcheck(rd, align(reg->R[PC],4) + (imm8 << 2));
 }
 
 void Instruction::add_sp(uint16_t inst)
@@ -1344,7 +1344,7 @@ void Instruction::add_sp(uint16_t inst)
     uint8_t imm8 = inst & 0xff;
     uint8_t rd = (inst >> 8) & 0x07;
 
-    reg->R[rd] = reg->R[SP] + (imm8 << 2);
+    reg->regWriteWithPCcheck(rd, reg->R[SP] + (imm8 << 2));
 }
 
 void Instruction::add_to_sp(uint16_t inst)

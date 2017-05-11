@@ -40,6 +40,7 @@ public :
 
     void init();
 
+    void regWriteWithPCcheck(uint8_t regNum,uint32_t val);
     void pcWrite(uint32_t addr);
 
     void throwPC(uint32_t addr);
