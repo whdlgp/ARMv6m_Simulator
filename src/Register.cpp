@@ -31,6 +31,14 @@ void Register::init()
         PSR[i] = 0;
 }
 
+void Register::regWriteWithPCcheck(uint8_t regNum, uint32_t val)
+{
+    if(regNum == PC)
+        this->throwPC(val);
+    else
+        this->R[regNum] = val;
+}
+
 void Register::pcWrite(uint32_t addr)
 {
     R[PC] = addr & 0xfffffffe;

@@ -59,8 +59,8 @@ int main()
     test_addRegisterT2Add4ToSP();
     test_addRegisterT2Subtract4FromSP();
     test_addRegisterT2Add1ToLR();
-    //test_addRegisterT2Add1ToPCWhichWillBeOddAndRoundedDown();
-    //test_addRegisterT2Add2ToPC();
+    test_addRegisterT2Add1ToPCWhichWillBeOddAndRoundedDown();
+    test_addRegisterT2Add2ToPC();
 
     test_addSPT1UseHighestRegisterAddSmallestImmediate();
     test_addSPT1UseLowestRegisterAddLargestImmediate();
