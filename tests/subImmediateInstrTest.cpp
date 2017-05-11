@@ -59,6 +59,8 @@ void test_subImmediateT1ForceOverflowPastLargestNegativeInteger()
    Encoding: 001 11 Rdn:3 Imm:8 */
 void test_subImmediateT2LowestRegisterSmallestImmediate()
 {
+    printf (" %s \n", __FUNCTION__);
+    setInitialRegisterValues();
     emitInstruction16("00111dddiiiiiiii", R0, 0);
     setExpectedXPSRflags("nZCv");
     setExpectedRegisterValue(R0, 0U);
@@ -66,6 +68,8 @@ void test_subImmediateT2LowestRegisterSmallestImmediate()
 
 void test_subImmediateT2HigestRegister_LargestImmediate()
 {
+    printf (" %s \n", __FUNCTION__);
+    setInitialRegisterValues();
     emitInstruction16("00111dddiiiiiiii", R7, 255);
     setExpectedXPSRflags("nzCv");
     setExpectedRegisterValue(R7, 0x77777777U - 255U);
@@ -73,6 +77,8 @@ void test_subImmediateT2HigestRegister_LargestImmediate()
 
 void test_subImmediateT2Subtract127FromR0CausesNoCarryToIndicateBorrowAndNegativeResult()
 {
+    printf (" %s \n", __FUNCTION__);
+    setInitialRegisterValues();
     emitInstruction16("00111dddiiiiiiii", R0, 127);
     setExpectedXPSRflags("Nzcv");
     setExpectedRegisterValue(R0, 0U - 127U);
@@ -80,6 +86,8 @@ void test_subImmediateT2Subtract127FromR0CausesNoCarryToIndicateBorrowAndNegativ
 
 void test_subImmediateT2ForceOverflowPastLargestNegativeInteger()
 {
+    printf (" %s \n", __FUNCTION__);
+    setInitialRegisterValues();
     setRegisterValue(R3, 0x80000000);
     emitInstruction16("00111dddiiiiiiii", R3, 1);
     setExpectedXPSRflags("nzCV");
