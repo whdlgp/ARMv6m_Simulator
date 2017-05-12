@@ -77,13 +77,13 @@ void Register::updatePC(uint8_t instLength)
         //if Branch or ADD, MOV instructions doesn't change PC,
         //than increase PC depending on the length of the instruction.
         if(instLength == 16)
-            reg->R[PC] += 2;
+            R[PC] += 2;
         else if(instLength == 32)
-            reg->R[PC] += 4;
+            R[PC] += 4;
     }
 
     //Finally, the PC value must be aligned to match the instruction length.
-    reg->R[PC] = reg->R[PC] & 0xfffffffe;
+    R[PC] = R[PC] & 0xfffffffe;
 }
 
 void Register::changePC()

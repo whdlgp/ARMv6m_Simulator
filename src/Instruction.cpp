@@ -1573,7 +1573,7 @@ void Instruction::pop_mult(uint16_t inst)
     uint8_t register_list = inst & 0xff;
     uint8_t p = (inst >> 8) & 0x01;
 
-    uint32_t addr = reg->regRead[SP];
+    uint32_t addr = reg->regRead(SP);
     uint8_t i;
 
     for(i = 0; i < 8; i++)
