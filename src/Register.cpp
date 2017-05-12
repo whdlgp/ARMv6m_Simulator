@@ -31,6 +31,23 @@ void Register::init()
         PSR[i] = 0;
 }
 
+uint32_t Register::regRead(uint8_t index)
+{
+    uint32_t retval;
+
+    if(index == PC)
+        retval = this->R[PC]+4;
+    else
+        retval = this->R[index];
+
+    return retval;
+}
+
+void Register::regWrite(uint8_t index, uint32_t val)
+{
+    this->R[index] = val;
+}
+
 void Register::pcWrite(uint32_t addr)
 {
     R[PC] = addr & 0xfffffffe;
@@ -42,13 +59,41 @@ void Register::throwPC(uint32_t addr)
     throwAddr = addr;
 }
 
-void Register::updatePC()
+void Register::updatePC(uint8_t instLength)
 {
+    //If Branch instructions throws value, than use that value.
     if(throwCheck())
     {
         pcWrite(throwAddr);
         throwBit = 0;
     }
+    //Check if ADD or MOV instruction change PC directly
+    else if(changePCCheck())
+    {
+        PCdirectChange = 0;
+    }
+    else
+    {
+        //if Branch or ADD, MOV instructions doesn't change PC,
+        //than increase PC depending on the length of the instruction.
+        if(instLength == 16)
+            R[PC] += 2;
+        else if(instLength == 32)
+            R[PC] += 4;
+    }
+
+    //Finally, the PC value must be aligned to match the instruction length.
+    R[PC] = R[PC] & 0xfffffffe;
+}
+
+void Register::changePC()
+{
+    this->PCdirectChange = 1;
+}
+
+uint8_t Register::changePCCheck()
+{
+    return this->PCdirectChange ? 1 : 0;
 }
 
 uint8_t Register::throwCheck()
