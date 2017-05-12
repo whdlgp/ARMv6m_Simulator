@@ -32,6 +32,7 @@ public :
     {
         throwBit = 0;
         throwAddr = 0;
+        PCdirectChange = 0;
     }
     static Register* getInstance() { return &regInst; }
 
