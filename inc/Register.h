@@ -40,6 +40,9 @@ public :
 
     void init();
 
+    uint32_t regRead(uint8_t index);
+    void regWrite(uint8_t index, uint32_t val);
+
     void pcWrite(uint32_t addr);
 
     void throwPC(uint32_t addr);

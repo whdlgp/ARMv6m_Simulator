@@ -31,6 +31,23 @@ void Register::init()
         PSR[i] = 0;
 }
 
+uint32_t Register::regRead(uint8_t index)
+{
+    uint32_t retval;
+
+    if(index == PC)
+        retval = this->R[PC]+4;
+    else
+        retval = this->R[index];
+
+    return retval;
+}
+
+void Register::regWrite(uint8_t index, uint32_t val)
+{
+    this->R[index] = val;
+}
+
 void Register::pcWrite(uint32_t addr)
 {
     R[PC] = addr & 0xfffffffe;
