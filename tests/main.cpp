@@ -71,7 +71,7 @@ int main()
 
     test_adrLowestRegisterWithLargestOffset();
     test_adrHighesttRegisterWithSmallestOffset();
-    //test_adrpcWillNeedToBeWordAlignedBeforeAdd();
+    test_adrpcWillNeedToBeWordAlignedBeforeAdd();
 
     test_andRegisterUseLowestRegisterForBothArgs();
     test_andRegisterUseHighestRegisterForBothArgs();
