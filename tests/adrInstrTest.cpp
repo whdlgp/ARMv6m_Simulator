@@ -38,10 +38,10 @@ void test_adrHighesttRegisterWithSmallestOffset()
 {
     printf (" %s \n", __FUNCTION__);
     setInitialRegisterValues();
-    setRegisterValue(PC, INITIAL_PC + 2);
     // Emit UNDEFINED 16-bit instruction.
     emitInstruction16("1101111000000000");
     // Emit actual test instruction at a 2-byte aligned address which isn't 4-byte aligned.
     emitInstruction16("10100dddiiiiiiii", R3, 0);
+    setRegisterValue(PC, INITIAL_PC + 2);
     setExpectedRegisterValue(R3, INITIAL_PC + 4);
 }
