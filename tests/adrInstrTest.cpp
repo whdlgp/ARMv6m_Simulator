@@ -42,6 +42,5 @@ void test_adrHighesttRegisterWithSmallestOffset()
     emitInstruction16("1101111000000000");
     // Emit actual test instruction at a 2-byte aligned address which isn't 4-byte aligned.
     emitInstruction16("10100dddiiiiiiii", R3, 0);
-    setRegisterValue(PC, INITIAL_PC + 2);
     setExpectedRegisterValue(R3, INITIAL_PC + 4);
 }
